@@ -1,0 +1,14 @@
+.{
+    .name = .quix_winapi,
+    .version = "0.0.0",
+    .fingerprint = 0x151bffef531cd95d,
+    .minimum_zig_version = "0.15.0-dev.8+576573686",
+    .dependencies = .{},
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+        "LICENSE",
+        "README.md",
+    },
+}
