@@ -7,6 +7,7 @@ pub const console = @import("console.zig");
 const ffi = @import("ffi/ffi.zig");
 pub const handle = @import("handle.zig");
 pub const screen_buffer = @import("screen_buffer.zig");
+pub const csbi = @import("csbi.zig");
 
 // zig fmt: off
 pub const ENABLE_LINE_INPUT: DWORD              = 0x0002;
@@ -54,14 +55,40 @@ pub const ConsoleError = error{
     FailedToWriteToHandle,
     FailedToSetWindowInfo,
     FailedToReadInput,
+    FailedToGetHandle,
+    FailedToSetCursorPosition,
+    FailedToSetCursorInfo,
     Unsupported,
 };
 
+pub const ConsoleCursorInfo = struct {
+    size: u32,
+    visible: bool,
+
+    pub fn fromRaw(info: ffi.CONSOLE_CURSOR_INFO) @This() {
+        return @This(){
+            .size = info.dwSize,
+            .visible = if (info.bVisible == 1) true else false,
+        };
+    }
+
+    pub fn toRaw(self: @This()) ffi.CONSOLE_CURSOR_INFO {
+        return ffi.CONSOLE_CURSOR_INFO{
+            .dwSize = self.size,
+            .bVisible = if (self.visible) windows.TRUE else windows.FALSE,
+        };
+    }
+};
+
+/// Defines the size of the terminal screen buffer, this is the same as
+/// calcualting `Coord.right - Coord.left` and `Coord.bottom - Coord.top`
 pub const Size = struct {
     width: i16,
     height: i16,
 };
 
+/// Defines the coordinates of the upper left and lower right corners of a
+/// the terminal screen buffer.
 pub const WindowPosition = struct {
     left: i16,
     right: i16,
@@ -87,9 +114,16 @@ pub const WindowPosition = struct {
     }
 };
 
+/// Defines the coordinates of a character cell in a console screen buffer.
+/// The origin of the coordinate system (0,0) is at the top, left cell of the
+/// buffer.
 pub const Coord = struct {
     x: i16,
     y: i16,
+
+    pub fn new(x: i16, y: i16) @This() {
+        return @This(){ .x = x, .y = y };
+    }
 
     pub fn fromRaw(coord: windows.COORD) @This() {
         return @This(){
@@ -97,13 +131,31 @@ pub const Coord = struct {
             .y = coord.Y,
         };
     }
+
+    pub fn toRaw(self: @This()) windows.COORD {
+        return windows.COORD{
+            .X = self.x,
+            .Y = self.y,
+        };
+    }
 };
 
+/// Describes an input event in the console input buffer.
 pub const InputRecord = union(enum) {
+    /// The Event member contains a `KeyEventRecord` with information about a
+    /// keyboard event.
     KeyEvent: KeyEventRecord,
+    /// The Event member contains a `MouseEventRecord` with information about a
+    /// mouse movement or button press event.
     MouseEvent: MouseEventRecord,
+    /// The Event member contains a `WindowBufferSizeRecord` with information
+    /// about the new size of the console screen buffer.
     WindowBufferSizeEvent: WindowBufferSizeRecord,
+    /// The Event member contains a `FocusEventRecord`. These events are used
+    /// internally and should be ignored.
     FocusEvent: FocusEventRecord,
+    /// The Event member contains a `MenuEventRecord`. These events are used
+    /// internally and should be ignored. [See](https://learn.microsoft.com/en-us/windows/console/input-record-str#members)
     MenuEvent: MenuEventRecord,
 
     pub fn fromRaw(input_record: ffi.INPUT_RECORD) @This() {
@@ -136,6 +188,8 @@ pub const InputRecord = union(enum) {
     }
 };
 
+/// The Event member contains a `KeyEventRecord` with information about a
+/// keyboard event.
 pub const KeyEventRecord = struct {
     key_down: bool,
     repeat_count: u16,
@@ -156,6 +210,8 @@ pub const KeyEventRecord = struct {
     }
 };
 
+/// The Event member contains a `MouseEventRecord` with information about a
+/// mouse movement or button press event.
 pub const MouseEventRecord = struct {
     mouse_position: Coord,
     button_state: MouseButtonState,
@@ -172,6 +228,8 @@ pub const MouseEventRecord = struct {
     }
 };
 
+/// The Event member contains a `WindowBufferSizeRecord` with information
+/// about the new size of the console screen buffer.
 pub const WindowBufferSizeRecord = struct {
     size: Coord,
 
@@ -182,6 +240,8 @@ pub const WindowBufferSizeRecord = struct {
     }
 };
 
+/// The Event member contains a `FocusEventRecord`. These events are used
+/// internally and should be ignored.
 pub const FocusEventRecord = struct {
     set_focus: bool,
 
@@ -192,6 +252,8 @@ pub const FocusEventRecord = struct {
     }
 };
 
+/// The Event member contains a `MenuEventRecord`. These events are used
+/// internally and should be ignored. [See](https://learn.microsoft.com/en-us/windows/console/input-record-str#members)
 pub const MenuEventRecord = struct {
     command_id: u32,
 
@@ -202,6 +264,7 @@ pub const MenuEventRecord = struct {
     }
 };
 
+/// Represents the state of modifier keys given an event.
 pub const ControlKeyState = packed struct {
     right_alt: bool,
     left_alt: bool,
@@ -216,6 +279,7 @@ pub const ControlKeyState = packed struct {
 };
 
 // TODO: find a way to represent mouse wheel events
+/// Represents the state of mouse buttons during a mouse input event.
 pub const MouseButtonState = packed struct {
     from_left_first_button: bool,
     rightmost_button: bool,
@@ -243,6 +307,7 @@ pub const MouseButtonState = packed struct {
     }
 };
 
+/// Represents which kind of mouse event happened.
 pub const EventFlags = packed struct {
     mouse_move: bool,
     mouse_click: bool,

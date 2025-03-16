@@ -14,7 +14,7 @@ pub const Handle = struct {
     }
 };
 
-pub fn writeAll(context: *const anyopaque, bytes: []const u8) ConsoleError!usize {
+fn writeAll(context: *const anyopaque, bytes: []const u8) ConsoleError!usize {
     const self: *Handle = @constCast(@ptrCast(@alignCast(context)));
 
     var bytes_written: windows.DWORD = 0;
@@ -55,6 +55,21 @@ fn createHandle(comptime name: []const u8) ConsoleError!HANDLE {
     }
 
     return handle;
+}
+
+pub fn getStdOutHandle() ConsoleError!Handle {
+    return stdHandle(windows.STD_OUTPUT_HANDLE);
+}
+
+pub fn getStdInHandle() ConsoleError!Handle {
+    return stdHandle(windows.STD_INPUT_HANDLE);
+}
+
+fn stdHandle(std_handle_no: windows.DWORD) ConsoleError!Handle {
+    const handle = windows.GetStdHandle(std_handle_no) catch {
+        return ConsoleError.FailedToGetHandle;
+    };
+    return makeShared(handle);
 }
 
 pub fn getCurrentInHandle() ConsoleError!Handle {

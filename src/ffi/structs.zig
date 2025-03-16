@@ -46,3 +46,8 @@ pub const INPUT_RECORD = extern struct {
     EventType: windows.WORD,
     Event: INPUT_RECORD_EVENT,
 };
+
+pub const CONSOLE_CURSOR_INFO = extern struct {
+    dwSize: windows.DWORD,
+    bVisible: windows.BOOL,
+};

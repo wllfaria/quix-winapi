@@ -43,3 +43,8 @@ pub extern "kernel32" fn GetNumberOfConsoleInputEvents(
     hConsoleInput: windows.HANDLE,
     lpcNumberOfEvents: *windows.DWORD,
 ) callconv(windows.WINAPI) windows.BOOL;
+
+pub extern "kernel32" fn SetConsoleCursorInfo(
+    hConsoleOutput: windows.HANDLE,
+    lpConsoleCursorInfo: *const structs.CONSOLE_CURSOR_INFO,
+) callconv(windows.WINAPI) windows.BOOL;

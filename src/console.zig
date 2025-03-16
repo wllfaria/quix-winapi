@@ -91,3 +91,24 @@ fn readInput(handle: Handle, buf: []ffi.INPUT_RECORD) ConsoleError!usize {
     if (result == 0) return ConsoleError.FailedToReadInput;
     return @as(usize, records_len);
 }
+
+pub fn setCursorPosition(
+    handle: Handle,
+    coord: quix_winapi.Coord,
+) ConsoleError!void {
+    const result = windows.kernel32.SetConsoleCursorPosition(
+        handle.inner,
+        coord.toRaw(),
+    );
+
+    if (result == 0) return ConsoleError.FailedToSetCursorPosition;
+}
+
+pub fn setCursorInfo(
+    handle: Handle,
+    info: quix_winapi.ConsoleCursorInfo,
+) ConsoleError!void {
+    const raw_info = info.toRaw();
+    const result = ffi.SetConsoleCursorInfo(handle.inner, &raw_info);
+    if (result == 0) return ConsoleError.FailedToSetCursorInfo;
+}

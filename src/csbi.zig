@@ -24,6 +24,10 @@ pub const Csbi = struct {
             .height = self.csbi.dwSize.Y,
         };
     }
+
+    pub fn cursorPosition(self: @This()) quix_winapi.Coord {
+        return quix_winapi.Coord.fromRaw(self.csbi.dwCursorPosition);
+    }
 };
 
 pub fn init() Csbi {
