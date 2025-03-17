@@ -1,6 +1,7 @@
 const std = @import("std");
 const windows = std.os.windows;
 const DWORD = windows.DWORD;
+const WORD = windows.WORD;
 
 const csbi = @import("csbi.zig");
 const ffi = @import("ffi/ffi.zig");
@@ -61,6 +62,17 @@ pub fn numberOfConsoleInputEvents(handle: Handle) ConsoleError!u32 {
 const MAX_EVENTS = 32;
 var read_input_buffer: [MAX_EVENTS]ffi.INPUT_RECORD = undefined;
 
+pub fn readSingleInput(
+    handle: Handle,
+) ConsoleError!quix_winapi.InputRecord {
+    var buffer: [1]ffi.INPUT_RECORD = undefined;
+
+    const read_len = try readInput(handle, &buffer);
+    std.debug.assert(read_len == 1);
+
+    return quix_winapi.InputRecord.fromRaw(buffer[0]);
+}
+
 pub fn readConsoleInput(
     handle: Handle,
     buffer: []quix_winapi.InputRecord,
@@ -111,4 +123,9 @@ pub fn setCursorInfo(
     const raw_info = info.toRaw();
     const result = ffi.SetConsoleCursorInfo(handle.inner, &raw_info);
     if (result == 0) return ConsoleError.FailedToSetCursorInfo;
+}
+
+pub fn setTextAttribute(handle: Handle, attributes: WORD) ConsoleError!void {
+    const result = windows.kernel32.SetConsoleTextAttribute(handle.inner, attributes);
+    if (result == 0) return ConsoleError.FailedToSetTextAttributes;
 }
