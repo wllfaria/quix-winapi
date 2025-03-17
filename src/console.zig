@@ -129,3 +129,27 @@ pub fn setTextAttribute(handle: Handle, attributes: WORD) ConsoleError!void {
     const result = windows.kernel32.SetConsoleTextAttribute(handle.inner, attributes);
     if (result == 0) return ConsoleError.FailedToSetTextAttributes;
 }
+
+pub fn peekNamedPipe(handle: Handle) ConsoleError!u32 {
+    var bytes_available: u32 = 0;
+    const success = ffi.PeekNamedPipe(
+        handle.inner,
+        null,
+        0,
+        null,
+        &bytes_available,
+        null,
+    );
+    if (success == 0) return ConsoleError.FailedToPeekNamedPipe;
+    return bytes_available;
+}
+
+pub fn peekInput(handle: Handle) ConsoleError!u32 {
+    var buffer: [1]ffi.INPUT_RECORD = undefined;
+    var events_read: u32 = 0;
+
+    const success = ffi.PeekConsoleInput(handle.inner, &buffer, 1, &events_read);
+    if (success == 0) return error.FailedToPeekConsoleInput;
+
+    return events_read;
+}

@@ -48,3 +48,19 @@ pub extern "kernel32" fn SetConsoleCursorInfo(
     hConsoleOutput: windows.HANDLE,
     lpConsoleCursorInfo: *const structs.CONSOLE_CURSOR_INFO,
 ) callconv(windows.WINAPI) windows.BOOL;
+
+pub extern "kernel32" fn PeekNamedPipe(
+    hNamedPipe: windows.HANDLE,
+    lpBuffer: ?windows.LPVOID,
+    nBufferSize: windows.DWORD,
+    lpBytesRead: ?*windows.DWORD,
+    lpTotalBytesAvail: ?*windows.DWORD,
+    lpBytesLeftThisMessage: ?*windows.DWORD,
+) callconv(windows.WINAPI) windows.BOOL;
+
+pub extern "kernel32" fn PeekConsoleInput(
+    hConsoleInput: windows.HANDLE,
+    lpBuffer: [*]structs.INPUT_RECORD,
+    nLength: windows.DWORD,
+    lpNumberOfEventsRead: *windows.DWORD,
+) callconv(windows.WINAPI) windows.BOOL;
