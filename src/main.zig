@@ -361,6 +361,14 @@ pub const ControlKeyState = packed struct {
     capslock: bool,
     enhanced_key: bool,
     _pad: u23 = 0,
+
+    pub fn controlPressed(self: @This()) bool {
+        return self.left_ctrl | self.right_ctrl;
+    }
+
+    pub fn altPressed(self: @This()) bool {
+        return self.left_alt | self.right_alt;
+    }
 };
 
 // TODO: find a way to represent mouse wheel events
@@ -373,30 +381,50 @@ pub const MouseButtonState = packed struct {
     from_left_fourth_button: bool,
     _pad: u27 = 0,
 
-    pub fn release_button(self: @This()) bool {
+    pub fn releaseButton(self: @This()) bool {
         return @as(u32, @bitCast(self)) == 0;
     }
 
-    pub fn left_button_pressed(self: @This()) bool {
+    pub fn leftButtonPressed(self: @This()) bool {
         return self.from_left_first_button;
     }
 
-    pub fn right_button_pressed(self: @This()) bool {
+    pub fn rightButtonPressed(self: @This()) bool {
         return self.rightmost_button or
             self.from_left_third_button or
             self.from_left_fourth_button;
     }
 
-    pub fn middle_button_pressed(self: @This()) bool {
+    pub fn middleButtonPressed(self: @This()) bool {
         return self.from_left_second_button;
+    }
+
+    pub fn scrollDown(self: @This()) bool {
+        return @as(i32, @bitCast(self)) < 0;
+    }
+
+    pub fn scrollUp(self: @This()) bool {
+        return @as(i32, @bitCast(self)) > 0;
+    }
+
+    pub fn scrollLeft(self: @This()) bool {
+        return @as(i32, @bitCast(self)) < 0;
+    }
+
+    pub fn scrollRight(self: @This()) bool {
+        return @as(i32, @bitCast(self)) > 0;
     }
 };
 
 /// Represents which kind of mouse event happened.
 pub const EventFlags = packed struct {
     mouse_move: bool,
-    mouse_click: bool,
+    double_click: bool,
     mouse_scroll: bool,
     mouse_horizontal_scroll: bool,
     _pad: u28 = 0,
+
+    pub fn pressOrRelease(self: @This()) bool {
+        return @as(u32, @bitCast(self)) == 0;
+    }
 };

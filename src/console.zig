@@ -132,7 +132,7 @@ pub fn setTextAttribute(handle: Handle, attributes: WORD) ConsoleError!void {
 
 pub fn peekNamedPipe(handle: Handle) ConsoleError!u32 {
     var bytes_available: u32 = 0;
-    const success = ffi.PeekNamedPipe(
+    const result = ffi.PeekNamedPipe(
         handle.inner,
         null,
         0,
@@ -140,7 +140,7 @@ pub fn peekNamedPipe(handle: Handle) ConsoleError!u32 {
         &bytes_available,
         null,
     );
-    if (success == 0) return ConsoleError.FailedToPeekNamedPipe;
+    if (result == 0) return ConsoleError.FailedToPeekNamedPipe;
     return bytes_available;
 }
 
@@ -148,8 +148,22 @@ pub fn peekInput(handle: Handle) ConsoleError!u32 {
     var buffer: [1]ffi.INPUT_RECORD = undefined;
     var events_read: u32 = 0;
 
-    const success = ffi.PeekConsoleInput(handle.inner, &buffer, 1, &events_read);
-    if (success == 0) return error.FailedToPeekConsoleInput;
+    const result = ffi.PeekConsoleInput(handle.inner, &buffer, 1, &events_read);
+    if (result == 0) return error.FailedToPeekConsoleInput;
 
     return events_read;
+}
+
+pub fn setSize(handle: Handle, width: i16, height: i16) ConsoleError!void {
+    const result = ffi.SetConsoleScreenBufferSize(
+        handle.inner,
+        quix_winapi.Coord.new(width, height).toRaw(),
+    );
+    if (result == 0) return error.FailedToSetConsoleSize;
+}
+
+pub fn largestWindowSize(handle: Handle) ConsoleError!quix_winapi.Coord {
+    const result = ffi.GetLargestConsoleWindowSize(handle.inner);
+    if (result.X == 0 and result.Y == 0) return error.FailedToGetLargestWindowSize;
+    return quix_winapi.Coord.fromRaw(result);
 }

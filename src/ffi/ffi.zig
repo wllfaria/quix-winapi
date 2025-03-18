@@ -64,3 +64,12 @@ pub extern "kernel32" fn PeekConsoleInput(
     nLength: windows.DWORD,
     lpNumberOfEventsRead: *windows.DWORD,
 ) callconv(windows.WINAPI) windows.BOOL;
+
+pub extern "kernel32" fn SetConsoleScreenBufferSize(
+    hConsoleOutput: windows.HANDLE,
+    dwSize: windows.COORD,
+) callconv(windows.WINAPI) windows.BOOL;
+
+pub extern "kernel32" fn GetLargestConsoleWindowSize(
+    hConsoleOutput: windows.HANDLE,
+) callconv(windows.WINAPI) windows.COORD;
