@@ -2,6 +2,7 @@ const std = @import("std");
 const windows = std.os.windows;
 const DWORD = windows.DWORD;
 const WORD = windows.WORD;
+const INT = windows.INT;
 
 pub const console = @import("console.zig");
 const ffi = @import("ffi/ffi.zig");
@@ -127,6 +128,50 @@ pub const COMMON_LVB_REVERSE_VIDEO: WORD        = 0x4000;
 
 /// Underscore.
 pub const COMMON_LVB_UNDERSCORE: WORD           = 0x8000;
+
+// virtual key codes
+pub const VK_SHIFT: INT                         = 0x0010;
+pub const VK_CONTROL: INT                       = 0x0011;
+pub const VK_MENU: INT                          = 0x0012;
+pub const VK_BACK: INT                          = 0x0008;
+pub const VK_ESCAPE: INT                        = 0x001B;
+pub const VK_RETURN: INT                        = 0x000D;
+pub const VK_F1: INT                            = 0x0070;
+pub const VK_F2: INT                            = 0x0071;
+pub const VK_F3: INT                            = 0x0072;
+pub const VK_F4: INT                            = 0x0073;
+pub const VK_F5: INT                            = 0x0074;
+pub const VK_F6: INT                            = 0x0075;
+pub const VK_F7: INT                            = 0x0076;
+pub const VK_F8: INT                            = 0x0077;
+pub const VK_F9: INT                            = 0x0078;
+pub const VK_F10: INT                           = 0x0079;
+pub const VK_F11: INT                           = 0x007a;
+pub const VK_F12: INT                           = 0x007b;
+pub const VK_F13: INT                           = 0x007c;
+pub const VK_F14: INT                           = 0x007d;
+pub const VK_F15: INT                           = 0x007e;
+pub const VK_F16: INT                           = 0x007f;
+pub const VK_F17: INT                           = 0x0080;
+pub const VK_F18: INT                           = 0x0081;
+pub const VK_F19: INT                           = 0x0082;
+pub const VK_F20: INT                           = 0x0083;
+pub const VK_F21: INT                           = 0x0084;
+pub const VK_F22: INT                           = 0x0085;
+pub const VK_F23: INT                           = 0x0086;
+pub const VK_F24: INT                           = 0x0087;
+pub const VK_LEFT: INT                          = 0x0025;
+pub const VK_UP: INT                            = 0x0026;
+pub const VK_RIGHT: INT                         = 0x0027;
+pub const VK_DOWN: INT                          = 0x0028;
+pub const VK_PRIOR: INT                         = 0x0021;
+pub const VK_NEXT: INT                          = 0x0022;
+pub const VK_HOME: INT                          = 0x0024;
+pub const VK_END: INT                           = 0x0023;
+pub const VK_DELETE: INT                        = 0x002E;
+pub const VK_INSERT: INT                        = 0x002D;
+pub const VK_TAB: INT                           = 0x0009;
+
 // zig fmt: on
 
 pub const ConsoleError = error{
@@ -363,11 +408,11 @@ pub const ControlKeyState = packed struct {
     _pad: u23 = 0,
 
     pub fn controlPressed(self: @This()) bool {
-        return self.left_ctrl | self.right_ctrl;
+        return self.left_ctrl or self.right_ctrl;
     }
 
     pub fn altPressed(self: @This()) bool {
-        return self.left_alt | self.right_alt;
+        return self.left_alt or self.right_alt;
     }
 };
 
@@ -428,3 +473,38 @@ pub const EventFlags = packed struct {
         return @as(u32, @bitCast(self)) == 0;
     }
 };
+
+pub fn getForegroundWindow() windows.HWND {
+    return ffi.GetForegroundWindow();
+}
+
+pub fn getWindowThreadProcessId(
+    window: windows.HWND,
+    process_id: ?*windows.DWORD,
+) windows.DWORD {
+    return ffi.GetWindowThreadProcessId(window, process_id);
+}
+
+pub fn getKeyboardLayout(thread_id: windows.DWORD) ffi.HKL {
+    return ffi.GetKeyboardLayout(thread_id);
+}
+
+pub fn toUnicodeEx(
+    wVirtKey: windows.UINT,
+    wScanCode: windows.UINT,
+    lpKeyState: [*]const windows.BYTE,
+    pwszBuff: windows.LPWSTR,
+    cchBuff: windows.INT,
+    wFlags: windows.UINT,
+    dwhkl: ffi.HKL,
+) i32 {
+    return ffi.ToUnicodeEx(
+        wVirtKey,
+        wScanCode,
+        lpKeyState,
+        pwszBuff,
+        cchBuff,
+        wFlags,
+        dwhkl,
+    );
+}

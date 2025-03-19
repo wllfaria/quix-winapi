@@ -4,6 +4,8 @@
 const std = @import("std");
 const windows = std.os.windows;
 
+pub const HKL = *opaque {};
+
 const structs = @import("structs.zig");
 pub const INPUT_RECORD = structs.INPUT_RECORD;
 pub const INPUT_RECORD_EVENT = structs.INPUT_RECORD_EVENT;
@@ -73,3 +75,24 @@ pub extern "kernel32" fn SetConsoleScreenBufferSize(
 pub extern "kernel32" fn GetLargestConsoleWindowSize(
     hConsoleOutput: windows.HANDLE,
 ) callconv(windows.WINAPI) windows.COORD;
+
+pub extern "user32" fn GetForegroundWindow() callconv(windows.WINAPI) windows.HWND;
+
+pub extern "user32" fn GetWindowThreadProcessId(
+    hWnd: windows.HWND,
+    lpdwProcessId: ?*windows.DWORD,
+) callconv(windows.WINAPI) windows.DWORD;
+
+pub extern "user32" fn GetKeyboardLayout(
+    idThread: windows.DWORD,
+) callconv(windows.WINAPI) HKL;
+
+pub extern "user32" fn ToUnicodeEx(
+    wVirtKey: windows.UINT,
+    wScanCode: windows.UINT,
+    lpKeyState: [*]const windows.BYTE,
+    pwszBuff: windows.LPWSTR,
+    cchBuff: windows.INT,
+    wFlags: windows.UINT,
+    dwhkl: HKL,
+) callconv(windows.WINAPI) windows.INT;
