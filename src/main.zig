@@ -188,6 +188,11 @@ pub const ConsoleError = error{
     FailedToSetCursorPosition,
     FailedToSetCursorInfo,
     FailedToSetTextAttributes,
+    FailedToPeekNamedPipe,
+    FailedToPeekConsoleInput,
+    FailedToSetConsoleSize,
+    FailedToGetLargestWindowSize,
+    FailedToFillOutput,
     Unsupported,
 };
 

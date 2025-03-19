@@ -96,3 +96,19 @@ pub extern "user32" fn ToUnicodeEx(
     wFlags: windows.UINT,
     dwhkl: HKL,
 ) callconv(windows.WINAPI) windows.INT;
+
+pub extern "kernel32" fn FillConsoleOutputCharacterA(
+    hConsoleOutput: windows.HANDLE,
+    cCharacter: windows.CHAR,
+    nLength: windows.DWORD,
+    dwWriteCoord: windows.COORD,
+    lpNumberOfCharsWritten: *windows.DWORD,
+) callconv(windows.WINAPI) windows.BOOL;
+
+pub extern "kernel32" fn FillConsoleOutputAttribute(
+    hConsoleOutput: windows.HANDLE,
+    wAttribute: windows.WORD,
+    nLength: windows.DWORD,
+    dwWriteCoord: windows.COORD,
+    lpNumberOfAttrsWritten: *windows.DWORD,
+) callconv(windows.WINAPI) windows.BOOL;

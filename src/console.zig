@@ -149,7 +149,7 @@ pub fn peekInput(handle: Handle) ConsoleError!u32 {
     var events_read: u32 = 0;
 
     const result = ffi.PeekConsoleInput(handle.inner, &buffer, 1, &events_read);
-    if (result == 0) return error.FailedToPeekConsoleInput;
+    if (result == 0) return ConsoleError.FailedToPeekConsoleInput;
 
     return events_read;
 }
@@ -159,11 +159,53 @@ pub fn setSize(handle: Handle, width: i16, height: i16) ConsoleError!void {
         handle.inner,
         quix_winapi.Coord.new(width, height).toRaw(),
     );
-    if (result == 0) return error.FailedToSetConsoleSize;
+    if (result == 0) return ConsoleError.FailedToSetConsoleSize;
 }
 
 pub fn largestWindowSize(handle: Handle) ConsoleError!quix_winapi.Coord {
     const result = ffi.GetLargestConsoleWindowSize(handle.inner);
-    if (result.X == 0 and result.Y == 0) return error.FailedToGetLargestWindowSize;
+    if (result.X == 0 and result.Y == 0) return ConsoleError.FailedToGetLargestWindowSize;
     return quix_winapi.Coord.fromRaw(result);
+}
+
+pub fn fillWithChar(
+    handle: Handle,
+    char: u8,
+    total_cells: u32,
+    location: quix_winapi.Coord,
+) ConsoleError!u32 {
+    var chars_written: u32 = 0;
+
+    const result = ffi.FillConsoleOutputCharacterA(
+        handle.inner,
+        char,
+        total_cells,
+        location.toRaw(),
+        &chars_written,
+    );
+
+    if (result == 0) return ConsoleError.FailedToFillOutput;
+
+    return @as(u32, @intCast(chars_written));
+}
+
+pub fn fillWithAttribute(
+    handle: Handle,
+    attribute: u16,
+    total_cells: u32,
+    location: quix_winapi.Coord,
+) ConsoleError!u32 {
+    var attributes_written: u32 = 0;
+
+    const result = ffi.FillConsoleOutputAttribute(
+        handle.inner,
+        attribute,
+        total_cells,
+        location.toRaw(),
+        &attributes_written,
+    );
+
+    if (result == 0) return ConsoleError.FailedToFillOutput;
+
+    return @as(u32, @intCast(attributes_written));
 }
